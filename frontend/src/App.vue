@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import AppLayout from "@/layouts/ui/AppLayout.vue";
+import { Toaster } from '@/components/ui/toast'
 
 </script>
 
@@ -8,6 +9,6 @@ import AppLayout from "@/layouts/ui/AppLayout.vue";
 <AppLayout>
   <RouterView />
 </AppLayout>
+  <Toaster />
 </template>
-<style scoped >
-</style>
+

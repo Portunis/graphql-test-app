@@ -4,31 +4,61 @@ const { ApolloServer } = require("apollo-server-express");
 const { createConnection } = require("typeorm");
 const cors = require("cors");
 
-const typeDefs = require("./schema/authSchema");
-const resolvers = require("./resolvers/authResolver");
+const authSchema = require("./schema/auth/authSchema");
+const musicSchema = require("./schema/music/musicSchema");
+const resolvers = require("./resolvers");
 const authMiddleware = require("./middlewares/authMiddleware");
 const dbConfig = require("./config/db");
+const cookieParser =  require("cookie-parser")
+
+const uploadAudioFile = require('./middlewares/upload/uploadFiles');
+const uploadAudio = require('./resolvers/upload/uploadResolver');
+const path = require('path');
+const {GraphQLSchema} = require("graphql/type");
+
+const corsOptions = {
+    origin: ['http://localhost:5173',' http://172.18.0.1:5173','http://192.168.0.183:5173'],
+    credentials: true
+};
 
 (async () => {
     const app = express();
     app.use(express.json());
+    app.use(cookieParser());
 
+    app.use(cors(corsOptions));
 
-    app.use(authMiddleware);
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+    app.post('/upload', uploadAudioFile, uploadAudio);
 
     await createConnection(dbConfig);
 
     const server = new ApolloServer({
-        typeDefs,
+        typeDefs:  [authSchema,musicSchema],
         resolvers,
-        context: ({ req }) => ({ user: req.user }),
+        context: ({ req, res }) => {
+            const user = { id: 1} || authMiddleware(req);
+            return { req, res, user };
+        },
+    });
+
+    app.get('/api/auth/check', (req, res) => {
+        if (req.cookies.token) {
+            console.log('user check',req.cookies.token);
+            res.sendStatus(200);
+        } else {
+            console.log('user check',req.cookies.token);
+            res.sendStatus(200);
+        }
     });
 
     await server.start();
-    server.applyMiddleware({ app });
+    server.applyMiddleware({ app, cors: corsOptions });
 
     const PORT = process.env.PORT || 4000;
-    app.listen(PORT, () => {
-        console.log(`Сервер запущен на  http://localhost:${PORT}/graphql`);
+    const HOST = '192.168.0.183';
+    app.listen(PORT,HOST ,() => {
+        console.log(`Сервер запущен на  http://${HOST}:${PORT}/graphql`);
     });
 })();

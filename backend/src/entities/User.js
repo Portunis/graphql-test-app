@@ -17,4 +17,11 @@ module.exports = new EntitySchema({
             type: "varchar",
         },
     },
+    relations: {
+        music: {
+            target: "Music",
+            type: "one-to-many",
+            inverseSide: "author",
+        },
+    },
 });

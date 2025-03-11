@@ -1,19 +1,17 @@
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
+const SECRET_KEY = process.env.JWT_SECRET || "asDMsdfkq4ogfd24fdsa2324123klmdk";
 
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (authHeader) {
-        try {
-            const token = authHeader.split(" ")[1];
-            req.user = jwt.verify(token, SECRET_KEY);
-        } catch (err) {
-            req.user = null;
-        }
-    } else {
-        req.user = null;
+
+const authMiddleware = (req) => {
+
+    const token = req.cookies.token
+
+    if (!token) return null;
+    try {
+        return jwt.verify(token, SECRET_KEY);
+    } catch {
+        return null;
     }
-    next();
 };
 
 module.exports = authMiddleware;
