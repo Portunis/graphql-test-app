@@ -1,13 +1,14 @@
 const {MusicType} = require("../../types/music/MusicType");
 const {GraphQLSchema} = require("graphql/index");
-const {GraphQLObjectType} = require("graphql/type");
+const {GraphQLObjectType, GraphQLList} = require("graphql/type");
+const { getMusicList } = require("../../resolvers/music/musicResolver");
 
 const QueryType = new GraphQLObjectType({
     name: "Query",
-    fields: {
+    fields: () => ({
         getMusicOne: { type: MusicType },
-        getMusicList: { type: MusicType },
-    },
+        getMusicList: { type: new GraphQLList(MusicType), resolve: getMusicList },
+    }),
 });
 
 const musicSchema = new GraphQLSchema({

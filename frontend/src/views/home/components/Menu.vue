@@ -19,14 +19,9 @@ import { gql } from "@apollo/client/core";
 const GET_USER = gql`
   query {
     user {
-         id
-      email
-      music(limit: 5) {
       id
-      title
-      description
-      authorId
-    }
+      email
+
     }
   }
 `;

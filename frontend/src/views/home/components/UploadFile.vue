@@ -1,20 +1,22 @@
 <template>
-  <Dialog>
+  <Dialog :open="isOpenModal" >
     <DialogTrigger>
-      <Button>
+      <Button @click="isOpenModal = true">
         <PlusCircleIcon class="mr-2 h-4 w-4" />
         Добавить музыку
       </Button>
     </DialogTrigger>
     <DialogContent>
-
-
-        <Input placeholder="Введите название трека" v-model="title" :disabled="uploading"/>
-        <Input v-model="description" placeholder="Введите описание" :disabled="uploading"/>
-        <div class="flex items-center justify-center p-2" :class="{'opacity-25': uploading}">
+    <div class="relative mt-5" :class="{'bg-white z-10':uploading}">
+      <Input class="mb-2 mt-5" placeholder="Введите название трека" v-model="title" :disabled="uploading"/>
+      <Input v-model="description" placeholder="Введите описание" :disabled="uploading"/>
+      <div v-if="!uploading" class="flex items-center justify-center mt-2 mb-2 w-full flex-col" :class="{'opacity-25': uploading}">
+        <div class="flex flex-col w-full">
+          <p class="pb-2 pt-2 ">Музыка</p>
           <label
-            for="dropzone-file"
-            class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+            v-if="!trackName"
+            for="dropzone-file-music"
+            class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
           >
             <div class="flex flex-col items-center justify-center pt-5 pb-6">
               <svg
@@ -37,18 +39,30 @@
               </p>
             </div>
             <input
-              id="dropzone-file"
+              id="dropzone-file-music"
               type="file"
               class="hidden"
-              @change="handleFileChange"
+              @change="handleFileMusic"
               :disabled="uploading"
             />
           </label>
+          <div v-if="trackName" class="relative flex items-center justify-between">
+          <p v-if="trackName" class="text-sm text-gray-500 dark:text-gray-400">{{ trackName }}</p>
+            <div class="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground cursor-pointer">
+
+              <X class="w-4 h-4"  @click="trackName = ''"/>
+            </div>
+          </div>
         </div>
-      <div v-if="uploading" class="mt-4">
-        <Progress v-model="progress" :max="100" class="w-full" />
+      </div>
+      <div class="mt-4 mb-4 flex items-center justify-center w-full z-50" v-if="uploading">
+        <div class="w-full flex items-center justify-center flex-col">
+          <p>{{ progress }}%</p>
+          <Progress v-model="progress" :max="100" class="w-full" />
+        </div>
       </div>
       <Button @click.prevent="uploadFile" :disabled="uploading">Загрузить</Button>
+    </div>
     </DialogContent>
   </Dialog>
 </template>
@@ -58,7 +72,7 @@ import { ref, defineProps } from "vue";
 import axios from "axios";
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import {PlusCircleIcon} from 'lucide-vue-next'
+import {PlusCircleIcon, X} from 'lucide-vue-next'
 import {Dialog, DialogTrigger, DialogContent} from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {toast} from "@/components/ui/toast";
@@ -68,23 +82,28 @@ type IProps = {
   id: string
 }
 
-const props = defineProps<IProps>()
+    const props = defineProps<IProps>()
 
+
+    const isOpenModal = ref(false);
     const uploading = ref(false);
     const progress = ref(0);
-    const file = ref(null);
+    const fileMusic = ref(null);
+    const  trackName = ref('');
     const title = ref('');
     const description = ref('');
-
+    let uploadCancelToken = null;
 
     const uploadFile = async () => {
-      if(!file) return
+      if(!fileMusic) return
       uploading.value = true;
       const formData = new FormData();
-      formData.append("audio", file.value);
+      formData.append("audio", fileMusic.value);
       formData.append("authorId", props.id);
       formData.append("title", title.value);
       formData.append("description", description.value);
+
+      uploadCancelToken = axios.CancelToken.source();
 
       try {
         const response = await axios.post("http://192.168.0.183:4000/upload", formData, {
@@ -97,16 +116,20 @@ const props = defineProps<IProps>()
               progress.value = Math.round((event.loaded * 100) / event.total);
             }
           },
+          cancelToken: uploadCancelToken.token,
         });
 
         if (response.status === 200) {
           toast({
-            description: `Файл ${response.data.title} загружен`,
+            description:  response.data.message,
           })
 
-          file.value = null;
+          fileMusic.value = null;
+          trackName.value = '';
           title.value = '';
           description.value = '';
+          isOpenModal.value = false
+          progress.value = 0;
 
         } else {
           console.error("Upload failed");
@@ -118,12 +141,22 @@ const props = defineProps<IProps>()
       }
     };
 
-    const handleFileChange = (event) => {
+    const handleFileMusic = (event) => {
       const selectedFile = event.target.files[0];
       if (selectedFile) {
-        file.value = selectedFile;
+        fileMusic.value = selectedFile;
+        trackName.value = selectedFile.name
       }
     };
+
+    const stopUploadFile = () => {
+      if (uploadCancelToken) {
+        uploadCancelToken.cancel("Загрузка отменена пользователем");
+        uploadCancelToken = null;
+      }
+      uploading.value = false;
+      fileMusic.value = null;
+    }
 
 
 </script>

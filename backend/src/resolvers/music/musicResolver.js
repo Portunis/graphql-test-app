@@ -16,15 +16,20 @@ const musicResolver = {
 
             return foundTrack;
         },
-        getMusicList: async (_, __, { user }, { req, res}) => {
+        getMusicList: async (_, __, { user }) => {
             if (!user) throw new Error('Ничего не найдено');
 
-            const foundTrackList = await getRepository(Music).find({where: { authorId: music.authorId } });
 
-            if (!foundTrackList) throw new Error('Ничего не найдено')
+            const musicRepository = getRepository(Music);
+            const foundTrackList = await musicRepository.find();
+
+
+
+            if (!foundTrackList.length) throw new Error('Ничего не найдено');
 
             return foundTrackList;
         }
+
     },
 
     Mutation: {

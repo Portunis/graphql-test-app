@@ -11,13 +11,13 @@ const authMiddleware = require("./middlewares/authMiddleware");
 const dbConfig = require("./config/db");
 const cookieParser =  require("cookie-parser")
 
-const uploadAudioFile = require('./middlewares/upload/uploadFiles');
-const uploadAudio = require('./resolvers/upload/uploadResolver');
+const uploadAudioFile  = require('./middlewares/upload/uploadFiles');
+const uploadAudio = require('./resolvers/upload/uploadAudio');
 const path = require('path');
 const {GraphQLSchema} = require("graphql/type");
 
 const corsOptions = {
-    origin: ['http://localhost:5173',' http://172.18.0.1:5173','http://192.168.0.183:5173'],
+    origin: ['http://localhost:5173',' http://172.18.0.1:5173','http://192.168.0.183:5173', 'https://studio.apollographql.com'],
     credentials: true
 };
 
@@ -30,7 +30,7 @@ const corsOptions = {
 
     app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-    app.post('/upload', uploadAudioFile, uploadAudio);
+    app.post('/upload', uploadAudioFile, uploadAudio)
 
     await createConnection(dbConfig);
 
