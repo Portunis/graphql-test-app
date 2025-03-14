@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import type { Playlist } from '../data/playlists'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
-interface SidebarProps {
-  playlists: Playlist[]
-}
-
-defineProps<SidebarProps>()
 </script>
 
 <template>

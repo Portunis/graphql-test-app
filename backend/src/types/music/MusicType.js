@@ -1,7 +1,5 @@
 const {  GraphQLObjectType, GraphQLString } = require("graphql");
-const {GraphQLID, GraphQLList} = require("graphql/type");
-const {getRepository} = require("typeorm");
-
+const {GraphQLID} = require("graphql/type");
 
 
 const MusicType = new GraphQLObjectType({
@@ -14,10 +12,13 @@ const MusicType = new GraphQLObjectType({
         url: { type: GraphQLString },
         author: {
             type: require("../user/UserType").UserType,
-            resolve: source => {
-                console.log('🔥 Вызван resolve для music:', source.authorId);
+            async resolve(obj, args, { db }) {
+                console.log("Resolve author:", obj);
+                if (!obj.authorId) return '1';
+                return await db.User.findOne({ where: { id: obj.authorId } });
             }
         }
     }),
 });
+
 module.exports = { MusicType };

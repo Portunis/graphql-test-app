@@ -4,30 +4,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { Label } from '@/components/ui/label'
-import {h, ref} from 'vue'
+import { ref} from 'vue'
 
-import { GithubIcon, Loader } from 'lucide-vue-next';
+import {  Loader } from 'lucide-vue-next';
 
 const { toast } = useToast()
 
 
 const isLoading = ref(false)
 import { useMutation } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+
 import {useToast} from "@/components/ui/toast";
+import {FORM_MUTATION} from "@/views/auth/data/AuthFragment.ts";
 
 
 
 const email = ref('')
 const password = ref('')
-
-const FORM_MUTATION = gql`
-  mutation register($email: String!, $password: String!) {
-    register(email: $email, password: $password) {
-      email
-    }
-  }
-`
 
 
 
@@ -44,14 +37,12 @@ async function onSubmit(event: Event) {
         title: 'Регистрация',
         description: `Вы успешно зарегистрировали аккаунт ${response.data.register.email}`,
       });
-
       email.value = '';
       password.value = '';
     }
 
 
   } catch (error) {
-    console.log(error)
     toast({
       title: 'Регистрация',
       description: `${error}`,
@@ -102,20 +93,5 @@ async function onSubmit(event: Event) {
         </Button>
       </div>
     </form>
-    <!--    <div class="relative">-->
-    <!--      <div class="absolute inset-0 flex items-center">-->
-    <!--        <span class="w-full border-t" />-->
-    <!--      </div>-->
-    <!--      <div class="relative flex justify-center text-xs uppercase">-->
-    <!--        <span class="bg-background px-2 text-muted-foreground">-->
-    <!--          Or continue with-->
-    <!--        </span>-->
-    <!--      </div>-->
-    <!--    </div>-->
-    <!--    <Button variant="outline" type="button" :disabled="isLoading">-->
-    <!--      <Loader v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />-->
-    <!--      <GithubIcon v-else class="mr-2 h-4 w-4" />-->
-    <!--      GitHub-->
-    <!--    </Button>-->
   </div>
 </template>

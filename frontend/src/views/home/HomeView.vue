@@ -1,38 +1,19 @@
 <script setup lang="ts">
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { useQuery } from '@vue/apollo-composable';
 import { Separator } from '@/components/ui/separator'
 
-
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Loader } from 'lucide-vue-next'
 import AlbumArtwork from './components/AlbumArtwork.vue'
 import Menu from './components/Menu.vue'
 import PodcastEmptyPlaceholder from './components/PodcastEmptyPlaceholder.vue'
-import Sidebar from './components/Sidebar.vue'
 
-import { playlists } from './data/playlists'
+import Sidebar from './components/Sidebar.vue'
 import UploadFile from "@/views/home/components/UploadFile.vue";
 
-
-import { useQuery } from '@vue/apollo-composable';
-import { gql } from "@apollo/client/core";
 import type {IMusic} from "@/typescript/interfaces/IMusic.ts";
 
-
-const GET_MUSIC = gql`
-query getMusicList {
-    getMusicList{
-      id
-      title
-      description
-      authorId
-      url
-       author {
-       id
-       email
-        }
-    }
-  }
-`;
+import {GET_MUSIC} from "@/views/home/data/MusicFragment.ts";
 
 
 const { result, loading, error } = useQuery<{ getMusicList: IMusic }>(GET_MUSIC)
@@ -45,7 +26,7 @@ const { result, loading, error } = useQuery<{ getMusicList: IMusic }>(GET_MUSIC)
     <div class="border-t">
       <div class="bg-background">
         <div class="grid lg:grid-cols-5">
-          <Sidebar :playlists="playlists" class="hidden lg:block" />
+          <Sidebar  class="hidden lg:block" />
           <div class="col-span-3 lg:col-span-4 lg:border-l">
             <div class="h-full px-4 py-6 lg:px-8">
               <div  class="h-full space-y-6">

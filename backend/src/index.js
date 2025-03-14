@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
-const { createConnection } = require("typeorm");
+const { createConnection, getRepository} = require("typeorm");
 const cors = require("cors");
 
 const authSchema = require("./schema/auth/authSchema");
@@ -15,6 +15,10 @@ const uploadAudioFile  = require('./middlewares/upload/uploadFiles');
 const uploadAudio = require('./resolvers/upload/uploadAudio');
 const path = require('path');
 const {GraphQLSchema} = require("graphql/type");
+
+const {User} = require("./entities/User");
+
+const {Music} = require("./entities/Music");
 
 const corsOptions = {
     origin: ['http://localhost:5173',' http://172.18.0.1:5173','http://192.168.0.183:5173', 'https://studio.apollographql.com'],
@@ -37,10 +41,15 @@ const corsOptions = {
     const server = new ApolloServer({
         typeDefs:  [authSchema,musicSchema],
         resolvers,
-        context: ({ req, res }) => {
-            const user = { id: 1} || authMiddleware(req);
-            return { req, res, user };
-        },
+        context: ({ req, res }) => ({
+            db: {
+                User: getRepository(User),
+                Music: getRepository(Music)
+            },
+            user: { id: 1} || authMiddleware(req),
+            req,
+            res
+        }),
     });
 
     app.get('/api/auth/check', (req, res) => {
